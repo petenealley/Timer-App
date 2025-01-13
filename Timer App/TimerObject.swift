@@ -32,7 +32,7 @@ class TimerObject {
     
     func startTimer() {
         isTimerRunning = true
-        timer = Timer.init(timeInterval: 1, repeats: true) { [self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [self] _ in
             if remainingTime > 0 {
                 timeElapsed += 1
             } else {
@@ -48,7 +48,7 @@ class TimerObject {
         }
     }
     
-    func reserTimer(){
+    func resetTimer(){
         timeElapsed = 0
         isTimerRunning = false
     }
