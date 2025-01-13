@@ -10,39 +10,43 @@ import SwiftUI
 struct TimerView: View {
     let timerObject: TimerObject
     let controls: Bool
+    @State private var width: CGFloat = 0
     var body: some View {
         ZStack {
             Circle()
-                .stroke(lineWidth: 30)
+                .stroke(lineWidth: width / 10)
                 .foregroundStyle(timerObject.timerColor.opacity(0.4))
             Circle()
                 .trim(from: 0.0, to: min(1-timerObject.progress, 1.0))
                 .stroke(timerObject.timerColor.gradient, style: StrokeStyle(
-                    lineWidth: 30,
+                    lineWidth: width / 10,
                     lineCap: .round,
                     lineJoin: .miter))
                 .rotationEffect(.degrees(-90))
                 .shadow(radius: 2)
             Circle()
-                .stroke(lineWidth: 15)
+                .stroke(lineWidth: width / 20)
                 .foregroundStyle(Color(uiColor: .systemBackground))
                 .shadow(color: timerObject.timerColor.opacity(0.6), radius: 5)
-                .frame(width: 40)
-                .offset(x: -180)
+                .frame(width: width / 8)
+                .offset(x: -width / 2)
                 .rotationEffect(.degrees(90.0 - 360 * timerObject.progress))
             VStack {
                 Text(displayTime(timerObject.length))
                     .monospacedDigit()
-                    .font(.system(size: 25))
+                    .font(.system(size: width / 12))
                 Text(displayTime(timerObject.remainingTime))
                     .monospacedDigit()
-                    .font(.system(size: 100))
+                    .font(.system(size: width / 3))
             }
                 .foregroundStyle(timerObject.timerColor)
                 .bold()
                 .contentTransition(.numericText())
         }
-        .padding(40)
+        .readSize { size in
+            width = size.width
+        }
+        .padding(width / 8)
             .animation(.linear, value: timerObject.remainingTime)
         HStack {
             Button {
@@ -50,21 +54,21 @@ struct TimerView: View {
             } label: {
                 Image(systemName: "play.fill")
             }
-            .disabled(timerObject.playButtonDisabled)
+            .modifier(ControlButtonStyle(color: timerObject.timerColor, disabled: timerObject.playButtonDisabled))
             
             Button {
                 timerObject.stopTimer()
             } label: {
                 Image(systemName: "pause.fill")
             }
-            .disabled(timerObject.pauseButtonDisabled)
+            .modifier(ControlButtonStyle(color: timerObject.timerColor, disabled: timerObject.pauseButtonDisabled))
             
             Button {
                 timerObject.resetTimer()
             } label: {
                 Image(systemName: "gobackward")
             }
-            .disabled(timerObject.resetButtonDisabled)
+            .modifier(ControlButtonStyle(color: timerObject.timerColor, disabled: timerObject.resetButtonDisabled))
             
         }
     }
@@ -79,3 +83,18 @@ struct TimerView: View {
 #Preview {
     TimerView(timerObject: TimerObject(timerColor: .red, length: 20), controls: true)
 }
+
+struct ControlButtonStyle: ViewModifier {
+    let color: Color
+    let disabled: Bool
+    func body(content: Content) -> some View {
+        content.font(.title)
+            .bold()
+            .frame(width: 50, height: 50)
+            .background(color).opacity(disabled ? 0.5 : 1)
+            .foregroundStyle(.white)
+            .clipShape(Circle())
+            .disabled(disabled)
+    }
+}
+
